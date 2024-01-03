@@ -1,34 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState } from 'react';
 import './App.css'
+import { useEffect } from 'react';
+import { getMovieList, searchMovie } from './data/api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [movieList, setMovieList] = useState([]);
+
+  const imageUrl = import.meta.env.VITE_BASEIMGURL;
+
+  useEffect(() => {
+    getMovieList().then((value) => {
+      setMovieList(value);
+    });
+  }, []);
+
+  const PopularMovieList = () => {
+    return movieList.map((movie, i) => {
+      return <div key={i} className="movie-wrapper">
+        <div className="movie-title">{movie.original_title}</div>
+        <img className="movie-image" src={`${imageUrl}${movie.poster_path}`} />
+        <div className="movie-date">{movie.release_date}</div>
+        <div className="movie-rate">{movie.vote_average}</div>
+      </div>
+    })
+  }
+
+  const search = (q) => {
+    if (q.length > 3) {
+      searchMovie(q).then((movies) => {
+        setMovieList(movies);
+      });
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className='App'>
+      <h1>Movie Mania</h1>
+      <input type="text" className="movie-search" placeholder='Cari film kesayangan anda..' onChange={({ target }) => search(target.value)} />
+      <div className="movie-container">
+
+        <PopularMovieList />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 
